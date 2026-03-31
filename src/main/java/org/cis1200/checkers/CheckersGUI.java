@@ -22,11 +22,11 @@ public class CheckersGUI extends JPanel {
     public CheckersGUI(JLabel status) {
         this.game = new CheckersGame();
         this.status = status;
-        boardImage = new ImageIcon("files/checkerPattern.png").getImage();
-        redCheckerImage = new ImageIcon("files/redChecker.png").getImage();
-        blackCheckerImage = new ImageIcon("files/blackChecker.png").getImage();
-        redKingImage = new ImageIcon("files/redKing.png").getImage();
-        blackKingImage = new ImageIcon("files/blackKing.png").getImage();
+        boardImage = new ImageIcon(getClass().getResource("/checkerPattern.png")).getImage();
+        redCheckerImage = new ImageIcon(getClass().getResource("/redChecker.png")).getImage();
+        blackCheckerImage = new ImageIcon(getClass().getResource("/blackChecker.png")).getImage();
+        redKingImage = new ImageIcon(getClass().getResource("/redKing.png")).getImage();
+        blackKingImage = new ImageIcon(getClass().getResource("/blackKing.png")).getImage();
         setFocusable(true);
 
         setPreferredSize(new Dimension(BOARD_SIZE, BOARD_SIZE));
