@@ -19,14 +19,22 @@ public class CheckersGUI extends JPanel {
     private CheckersGame game;
     private JLabel status;
 
+    private Image loadImage(String name) {
+        java.net.URL url = getClass().getResource("/" + name);
+        if (url == null) {
+            throw new IllegalStateException("Missing resource: " + name);
+        }
+        return new ImageIcon(url).getImage();
+    }
+
     public CheckersGUI(JLabel status) {
         this.game = new CheckersGame();
         this.status = status;
-        boardImage = new ImageIcon(getClass().getResource("/checkerPattern.png")).getImage();
-        redCheckerImage = new ImageIcon(getClass().getResource("/redChecker.png")).getImage();
-        blackCheckerImage = new ImageIcon(getClass().getResource("/blackChecker.png")).getImage();
-        redKingImage = new ImageIcon(getClass().getResource("/redKing.png")).getImage();
-        blackKingImage = new ImageIcon(getClass().getResource("/blackKing.png")).getImage();
+        boardImage = loadImage("checkerPattern.png");
+        redCheckerImage = loadImage("redChecker.png");
+        blackCheckerImage = loadImage("blackChecker.png");
+        redKingImage = loadImage("redKing.png");
+        blackKingImage = loadImage("blackKing.png");
         setFocusable(true);
 
         setPreferredSize(new Dimension(BOARD_SIZE, BOARD_SIZE));
@@ -114,45 +122,86 @@ public class CheckersGUI extends JPanel {
     }
 
     public void saveGame() {
-        String fileName = JOptionPane.showInputDialog(null,
+        String fileName = JOptionPane.showInputDialog(
+                null,
                 "Enter game1, game2, or game3 to store the game",
-                "Save Game", JOptionPane.PLAIN_MESSAGE);
+                "Save Game",
+                JOptionPane.PLAIN_MESSAGE
+        );
 
-        if (fileName.equals("game1") || fileName.equals("game2") || fileName.equals("game3")) {
+        if (fileName == null) {
+            return;
+        }
+
+        fileName = fileName.trim();
+
+        if (isValidSlotName(fileName)) {
             try {
-                CSV.writeFile("files/" + fileName, game.getHistory());
+                CSV.writeFile(getSaveFilePath(fileName), game.getHistory());
                 JOptionPane.showMessageDialog(null, "Game saved successfully!");
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
                 JOptionPane.showMessageDialog(
-                        null, "Error saving the game: " + e.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                        null,
+                        "Error saving the game: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Error. Please try again and only " +
-                    "enter game1, game2, or game3.");
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error. Please try again and only enter game1, game2, or game3."
+            );
         }
     }
 
     public void loadGame() {
         String fileName = JOptionPane.showInputDialog(
-                null, "Enter game1, game2, or game3 to load that game",
-                "Load Game", JOptionPane.PLAIN_MESSAGE);
-        if (fileName.equals("game1") || fileName.equals("game2") || fileName.equals("game3")) {
+                null,
+                "Enter game1, game2, or game3 to load that game",
+                "Load Game",
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (fileName == null) {
+            return;
+        }
+
+        fileName = fileName.trim();
+
+        if (isValidSlotName(fileName)) {
             try {
-                CheckersGame loadedGame = CSV.loadFile("files/" + fileName);
+                CheckersGame loadedGame = CSV.loadFile(getSaveFilePath(fileName));
                 this.game = loadedGame;
                 repaint();
                 updateStatus();
                 JOptionPane.showMessageDialog(null, "Game loaded successfully!");
             } catch (RuntimeException e) {
                 JOptionPane.showMessageDialog(
-                        null, "Error loading the game: " + e.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                        null,
+                        "Error loading the game: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Error. Please try again with a " +
-                    "valid file name.");
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error. Please try again with a valid file name."
+            );
         }
+    }
+
+    private String getSaveFilePath(String fileName) {
+        java.io.File saveDir = new java.io.File(System.getProperty("user.home"), "checkers-saves");
+        if (!saveDir.exists() && !saveDir.mkdirs()) {
+            throw new IllegalStateException("Could not create save directory.");
+        }
+        return new java.io.File(saveDir, fileName + ".csv").getAbsolutePath();
+    }
+
+    private boolean isValidSlotName(String fileName) {
+        return "game1".equals(fileName) || "game2".equals(fileName) || "game3".equals(fileName);
     }
 
     public void instructions() {
